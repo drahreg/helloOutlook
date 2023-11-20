@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+
+<body>
+    <div class="container">
+    <p>This add-in will insert the text fetched from a server in a new message.</p>
+    <form action="" id="test_form">
+        <div class="form-group row">
+            <label class="col-sm-2" for="email_type">Email Typ</label>
+            <div class="col-sm-10">
+                <select name="email_type" id="email_type">
+                    <option value="meeting_request">Terminanfrage</option>
+                    <option value="status_update">Statusupdate</option>
+                    <option value="product_offer">Produkt Angebot</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2" for="gender">Anrede</label>
+            <div class="col-sm-10">
+                <select name="gender" id="gender">
+                    <option value="-">-</option>
+                    <option value="mr">Herr</option>
+                    <option value="mrs">Frau</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2" for="name">Name</label>
+            <div class="col-sm-10">
+                <input type="text" name="name" id="name">
+            </div>
+        </div>
+        <div>
+            <input type="submit">
+        </div>
+    </form>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script>
+
+    Office.onReady((info) => {
+        if (info.host === Office.HostType.Outlook) {
+
+            $('#test_form').submit(function(e) {
+                e.preventDefault();
+
+                let query = $(e.target).serialize();
+                let url = 'https://localhost:3000/?' + query;
+
+                $.ajax({
+                    url: url,
+                    cache: false
+                })
+                .done(function( text ) {
+                    console.log(text);
+                    appendText(text);
+                });
+            });
+        
+        }
+    });
+
+    function appendText(text) {
+        Office.context.mailbox.item.body.setAsync(
+            text,
+            {
+                coercionType: "html", // Write text as HTML
+            },
+
+            // Callback method to check that setAsync succeeded
+            function (asyncResult) {
+                if (asyncResult.status ==
+                    Office.AsyncResultStatus.Failed) {
+                    write(asyncResult.error.message);
+                }
+            }
+        );
+    };
+
+</script>
+
+</html>
